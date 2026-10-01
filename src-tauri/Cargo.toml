@@ -1,0 +1,16 @@
+[package]
+name = "disklens"
+description = "DiskLens 桌面版：Rust 扫描核心 + Tauri 前端"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+serde.workspace = true
+trash = "5"
+disklens-core = { path = "../crates/disklens-core" }

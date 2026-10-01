@@ -1,0 +1,431 @@
+@import "tailwindcss";
+
+/* ---------- Design tokens (Windows 11 / Fluent) ---------- */
+@theme inline {
+  --color-app: var(--bg);
+  --color-layer: var(--layer);
+  --color-layer-solid: var(--layer-solid);
+  --color-card: var(--card);
+  --color-card-hover: var(--card-hover);
+  --color-stroke: var(--stroke);
+  --color-stroke-strong: var(--stroke-strong);
+  --color-fg: var(--text);
+  --color-fg2: var(--text-2);
+  --color-fg3: var(--text-3);
+  --color-subtle: var(--subtle-hover);
+  --color-subtle-press: var(--subtle-press);
+  --color-acrylic: var(--acrylic);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-soft: var(--accent-soft);
+  --color-on-accent: var(--on-accent);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-dialog: var(--dialog);
+  --color-dialog-footer: var(--dialog-footer);
+  --color-viewer: var(--viewer);
+  --color-taskbar: var(--taskbar);
+
+  /* Treemap 数据可视化色（分类 / 时序），与界面色分离 */
+  --color-dataviz-1: var(--dv-1);
+  --color-dataviz-2: var(--dv-2);
+  --color-dataviz-3: var(--dv-3);
+  --color-dataviz-4: var(--dv-4);
+  --color-dataviz-5: var(--dv-5);
+  --color-dataviz-6: var(--dv-6);
+  --color-dataviz-dir: var(--dv-dir);
+  --color-dataviz-canvas: var(--dv-canvas);
+  --color-dataviz-ink: var(--dv-ink);
+  --color-dataviz-ink2: var(--dv-ink-2);
+  --color-dataviz-grid: var(--dv-grid);
+  --color-dataviz-hairline: var(--dv-hairline);
+}
+@theme {
+  --shadow-flyout: 0 8px 16px var(--shadow-color), 0 0 1px var(--shadow-color);
+  --shadow-dialog: 0 32px 64px rgba(0, 0, 0, 0.26), 0 2px 21px rgba(0, 0, 0, 0.2);
+  --shadow-window: 0 24px 60px rgba(0, 0, 0, 0.45), 0 2px 12px rgba(0, 0, 0, 0.3);
+  --shadow-panel: 0 2px 9px rgba(0, 0, 0, 0.035);
+
+  --animate-fade-in: ps-fade-in 0.18s ease-out both;
+  --animate-menu-in: ps-menu-in 0.16s cubic-bezier(0.1, 0.9, 0.2, 1) both;
+  --animate-dialog-in: ps-dialog-in 0.24s cubic-bezier(0.1, 0.9, 0.2, 1) both;
+  --animate-toast-in: ps-toast-in 0.28s cubic-bezier(0.1, 0.9, 0.2, 1) both;
+  --animate-panel-in: ps-panel-in 0.22s cubic-bezier(0.1, 0.9, 0.2, 1) both;
+  --animate-enter: ps-enter 0.22s ease-out both;
+
+  @keyframes ps-fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes ps-menu-in {
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes ps-dialog-in {
+    from { opacity: 0; transform: scale(1.04); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes ps-toast-in {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes ps-panel-in {
+    from { opacity: 0; transform: translateX(16px); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes ps-enter {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+}
+
+/* ---------- Theme variables ---------- */
+:root {
+  color-scheme: light;
+  --bg: #f3f3f3;
+  --layer: rgba(255, 255, 255, 0.55);
+  --layer-solid: #f9f9f9;
+  --card: #fdfdfd;
+  --card-hover: #f5f5f5;
+  --stroke: rgba(0, 0, 0, 0.085);
+  --stroke-strong: rgba(0, 0, 0, 0.18);
+  --text: #1b1b1b;
+  --text-2: #5d5d5d;
+  --text-3: #8b8b8b;
+  --subtle-hover: rgba(0, 0, 0, 0.05);
+  --subtle-press: rgba(0, 0, 0, 0.035);
+  --acrylic: rgba(250, 250, 250, 0.9);
+  --dialog: #ffffff;
+  --dialog-footer: #f3f3f3;
+  --viewer: #e9e9e9;
+  --taskbar: rgba(238, 242, 249, 0.86);
+  --shadow-color: rgba(0, 0, 0, 0.16);
+  --slider-track: rgba(0, 0, 0, 0.42);
+  --scroll-thumb: rgba(0, 0, 0, 0.3);
+  --accent: #005fb8;
+  --accent-hover: #1a6fc2;
+  --accent-soft: rgba(0, 95, 184, 0.12);
+  --on-accent: #ffffff;
+  --danger: #c42b1c;
+  --danger-soft: rgba(196, 43, 28, 0.1);
+  --success: #107c10;
+  --success-soft: rgba(16, 124, 16, 0.12);
+  --warning: #9a6700;
+  --warning-soft: rgba(154, 103, 0, 0.12);
+
+  /* Treemap 数据色：取自 Win11 强调色调色板，深色下用降饱和的变体 */
+  --dv-1: #0078d4;
+  --dv-2: #00a3a3;
+  --dv-3: #107c10;
+  --dv-4: #ca5010;
+  --dv-5: #c239b3;
+  --dv-6: #8764b8;
+  --dv-dir: #7ab7e8;
+  --dv-canvas: #f5f7f9;
+  --dv-ink: #1f2933;
+  --dv-ink-2: #34434f;
+  --dv-grid: #0078d4;
+  --dv-hairline: rgba(255, 255, 255, 0.88);
+
+  /* 年龄色阶末档（超过一年 = 陈旧），独立于散列色板以保住「红=陈旧」的语义 */
+  --dv-stale: #c50f1f;
+
+  /* 扩展名散列色板（format.ts colorForExt，12 色） */
+  --dv-7: #60a5fa;
+  --dv-8: #f472b6;
+  --dv-9: #34d399;
+  --dv-10: #fbbf24;
+  --dv-11: #a78bfa;
+  --dv-12: #22d3ee;
+  --dv-13: #fb7185;
+  --dv-14: #4ade80;
+  --dv-15: #f59e0b;
+  --dv-16: #818cf8;
+  --dv-17: #2dd4bf;
+  --dv-18: #e879f9;
+
+  /* 文件类别色（tree.ts getCategory，9 类）——同一字符串既用于 inline style 也用于 canvas */
+  --cat-system: #38bdf8;
+  --cat-archive: #f59e0b;
+  --cat-video: #ec4899;
+  --cat-audio: #a855f7;
+  --cat-image: #10b981;
+  --cat-code: #06b6d4;
+  --cat-document: #6366f1;
+  --cat-game: #f97316;
+  --cat-other: #94a3b8;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #202020;
+  --layer: rgba(255, 255, 255, 0.035);
+  --layer-solid: #272727;
+  --card: #2d2d2d;
+  --card-hover: #333333;
+  --stroke: rgba(255, 255, 255, 0.08);
+  --stroke-strong: rgba(255, 255, 255, 0.18);
+  --text: #ffffff;
+  --text-2: rgba(255, 255, 255, 0.78);
+  --text-3: rgba(255, 255, 255, 0.52);
+  --subtle-hover: rgba(255, 255, 255, 0.065);
+  --subtle-press: rgba(255, 255, 255, 0.045);
+  --acrylic: rgba(40, 40, 40, 0.92);
+  --dialog: #2b2b2b;
+  --dialog-footer: #202020;
+  --viewer: #161616;
+  --taskbar: rgba(28, 28, 28, 0.86);
+  --shadow-color: rgba(0, 0, 0, 0.45);
+  --slider-track: rgba(255, 255, 255, 0.5);
+  --scroll-thumb: rgba(255, 255, 255, 0.3);
+  --accent: #60cdff;
+  --accent-hover: #56b8e6;
+  --accent-soft: rgba(96, 205, 255, 0.16);
+  --on-accent: #000000;
+  --danger: #ff99a4;
+  --danger-soft: rgba(255, 153, 164, 0.14);
+  --success: #7bd88a;
+  --success-soft: rgba(123, 216, 138, 0.16);
+  --warning: #e8b866;
+  --warning-soft: rgba(232, 184, 102, 0.16);
+
+  /* 深色底上分类色需提亮降饱和，否则会糊成一片 */
+  --dv-1: #4cc2ff;
+  --dv-2: #4fd6c9;
+  --dv-3: #7bd88a;
+  --dv-4: #f79a4b;
+  --dv-5: #e17ad4;
+  --dv-6: #a996e0;
+  --dv-dir: #3f7fb8;
+  --dv-canvas: #1b1e22;
+  --dv-ink: #e8edf2;
+  --dv-ink-2: #b3bec9;
+  --dv-grid: #4cc2ff;
+  --dv-hairline: rgba(0, 0, 0, 0.55);
+
+  /* 扩展名散列色板：亮色下的 400 级在深底上会发飘，整体降到 500 级 */
+  --dv-7: #3b82f6;
+  --dv-8: #ec4899;
+  --dv-9: #10b981;
+  --dv-10: #f59e0b;
+  --dv-11: #8b5cf6;
+  --dv-12: #06b6d4;
+  --dv-13: #f43f5e;
+  --dv-14: #22c55e;
+  --dv-15: #d97706;
+  --dv-16: #6366f1;
+  --dv-17: #14b8a6;
+  --dv-18: #d946ef;
+
+  --dv-stale: #f26d6d;
+
+  --cat-system: #0ea5e9;
+  --cat-archive: #d97706;
+  --cat-video: #db2777;
+  --cat-audio: #9333ea;
+  --cat-image: #059669;
+  --cat-code: #0891b2;
+  --cat-document: #4f46e5;
+  --cat-game: #ea580c;
+  --cat-other: #64748b;
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+  min-width: 360px;
+  margin: 0;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Segoe UI Variable Text", "Segoe UI Variable", "Segoe UI", "Microsoft YaHei UI",
+    "Microsoft YaHei", "PingFang SC", "Hiragino Sans GB", system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:focus-visible,
+select:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+::selection {
+  background: var(--accent-soft);
+  color: var(--text);
+}
+
+/* ---------- Utilities ---------- */
+.win-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scroll-thumb) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background: var(--scroll-thumb);
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--stroke-strong);
+  background-clip: padding-box;
+}
+
+.kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 4px;
+  border: 1px solid var(--stroke-strong);
+  border-bottom-width: 2px;
+  background: var(--card);
+  color: var(--text);
+  font-size: 12px;
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+/* ---------- Fluent slider ---------- */
+.win-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 22px;
+  background: transparent;
+  cursor: default;
+  touch-action: none;
+}
+.win-slider:focus-visible {
+  outline: none;
+}
+.win-slider::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(to right, var(--accent) 0 var(--pct, 0%), var(--slider-track) var(--pct, 0%) 100%);
+}
+.win-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  margin-top: -8px;
+  border-radius: 50%;
+  border: 1px solid var(--stroke-strong);
+  background: var(--card);
+  box-shadow: inset 0 0 0 5px var(--card), inset 0 0 0 20px var(--accent);
+  transition: box-shadow 0.12s ease;
+}
+.win-slider:hover::-webkit-slider-thumb {
+  box-shadow: inset 0 0 0 4px var(--card), inset 0 0 0 20px var(--accent);
+}
+.win-slider:active::-webkit-slider-thumb {
+  box-shadow: inset 0 0 0 6px var(--card), inset 0 0 0 20px var(--accent);
+}
+.win-slider:disabled {
+  opacity: 0.4;
+}
+.win-slider::-moz-range-track {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--slider-track);
+}
+.win-slider::-moz-range-progress {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--accent);
+}
+.win-slider::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 4px solid var(--card);
+  box-shadow: 0 0 1px var(--stroke-strong);
+}
+
+/* ---------- 项目自有结构类（保留） ---------- */
+
+.fluent-titlebar {
+  -webkit-app-region: drag;
+}
+
+.fluent-titlebar button,
+.fluent-titlebar span {
+  -webkit-app-region: no-drag;
+}
+
+.fluent-nav-item {
+  transition: background-color 120ms ease, color 120ms ease;
+}
+
+.tree-list {
+  container-type: inline-size;
+}
+
+.tree-grid {
+  grid-template-columns: minmax(0, 1fr) 100px 62px 64px 62px;
+}
+
+@container (max-width: 630px) {
+  .tree-grid {
+    grid-template-columns: minmax(0, 1fr) 92px 58px;
+  }
+
+  .tree-grid .tree-count,
+  .tree-grid .tree-age {
+    display: none;
+  }
+}
+
+.fluent-shell main > header {
+  animation: ps-enter 220ms ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

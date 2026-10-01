@@ -1,0 +1,14 @@
+[package]
+name = "disklens-cli"
+description = "DiskLens 命令行版本：扫描并输出最大的目录、文件和扩展名"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "disklens"
+path = "src/main.rs"
+
+[dependencies]
+disklens-core = { path = "../disklens-core" }

@@ -1,0 +1,12 @@
+[package]
+name = "disklens-core"
+description = "高性能磁盘占用扫描核心：rayon 并行遍历 + NTFS $MFT 直读 + 扁平化目录树"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+rayon.workspace = true
+serde.workspace = true
+sysinfo.workspace = true
