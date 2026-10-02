@@ -9,7 +9,8 @@
 不要主动 `npm install`；`src-tauri/tauri.conf.json` 里的 `beforeDevCommand` / `beforeBuildCommand`
 必须写 `bun run …`，不是 `npm run …`。
 
-依赖版本与 `D:\Ai\PickScreen` 保持一致：React 19.3.0 / Tailwind 4.3.3 / Vite 8.3.1 / TypeScript 7.0.2。
+依赖版本与 `D:\Ai\PickScreen` 保持一致：React 19.3.0 / preact 11.0.0（兼容层）/ Vite 8.3.1 / TypeScript 7.0.2。
+**已移除** tailwindcss / @tailwindcss/vite / tailwind-merge —— 样式层是手写原生 CSS，见 §6。
 
 ## 2. 构建与验证
 
@@ -59,11 +60,19 @@ bun run tauri icon src-tauri/app-icon.svg
 
 ## 6. 界面：数据色不是界面色
 
-界面走 Windows 11 Fluent 令牌（`src/index.css`，明暗两套），与 `lumina`、`PickScreen` 同一套。
+界面走 Windows 11 Fluent 令牌（`src/index.css`，明暗两套），与 `lumina`、`PickScreen`、`Duster` 同一套。
 **不要新造硬编码色值**——本项目改造前散落着约 170 种不同的色值。
 
-**Treemap 的分类色 / 时序色是数据编码，不是界面色**，单列为 `dataviz-*` 令牌族
-（`--dv-1…--dv-18`、`--cat-*`、`--dv-stale` 等），深色模式下有单独调过的降饱和变体。
+**2026-10-03 起样式层已从 Tailwind 改为手写原生 CSS**（`228a566`）。`index.css` 1,647 行，
+分 `@layer base`（从 Tailwind v4 preflight 抄来的重置）+ `@layer components`（377 个手写语义类）。
+组件里写语义类、颜色写 `var(--*)`；`cn()` 只是 `clsx`。**别把 Tailwind 加回来** —— 它靠扫描
+源文件猜哪些类被用了，而本项目用 `vite-plugin-singlefile`，上次构建内联进 `dist/index.html` 的
+旧类名会被重新扫进去。改完界面记得确认**用到的每个类在 `index.css` 都有定义**，这是手写样式
+最常见的静默失败。
+
+**Treemap 的分类色 / 时序色是数据编码，不是界面色**，单列为数据色令牌族
+（`--dv-1…--dv-18`、`--cat-*`、`--dv-stale` 等，共 22 个），深色模式下有单独调过的降饱和变体。
+**明暗两套都要在 `:root` 和 `:root[data-theme="dark"]` 里各给一次值。**
 
 ### canvas 不能用 `var()` —— 本项目特有的坑
 
@@ -105,7 +114,7 @@ bun run tauri icon src-tauri/app-icon.svg
 ## 9. 改动前先核对清单
 
 1. 动到 `target` 忽略规则了吗？→ 见 §4，注意尾斜杠
-2. 新加图表色了吗？→ 必须走 `dataviz-*` 令牌，且明暗两套都要给值，见 §6
+2. 新加图表色了吗？→ 必须走 `--dv-*` / `--cat-*` 数据色令牌，且明暗两套都要给值，见 §6
 3. 新加了 canvas 绘制吗？→ 填色前先 `resolveCssColor`，见 §6
 4. 改了 `tauri.conf.json` 的 `identifier` 吗？→ 会连带改应用数据目录；本项目无 `app_data_dir` 类调用，改动安全
 5. 改了 `tsconfig.json` 的 `paths` 吗？→ TS 7 已移除 `baseUrl`，必须用相对路径 `"./src/*"`
