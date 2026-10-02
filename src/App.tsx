@@ -66,7 +66,7 @@ const ENGINE_LABELS: Record<string, string> = {
   auto: "自动",
 };
 
-const SURFACE = "min-h-0 overflow-hidden rounded-[10px] border border-stroke bg-card shadow-panel";
+const SURFACE = "surface";
 
 export default function App() {
   const scan = useDiskScan();
@@ -165,32 +165,32 @@ export default function App() {
   }, []);
 
   return (
-    <div className="fluent-shell flex h-screen min-h-[540px] flex-col overflow-hidden bg-app text-fg">
+    <div className="fluent-shell app-shell">
       {/* Tauri uses the system title bar. This is the app's own command header. */}
-      <div className="flex h-[54px] shrink-0 items-center border-b border-stroke bg-acrylic px-5 backdrop-blur-xl max-sm:px-3">
-        <div className="flex min-w-0 flex-1 items-center gap-3">
-          <div className="grid h-8 w-8 place-items-center rounded-[9px] bg-accent text-on-accent shadow-sm">
-            <HardDrive className="h-[17px] w-[17px]" strokeWidth={1.9} />
+      <div className="titlebar">
+        <div className="titlebar-main">
+          <div className="app-mark">
+            <HardDrive className="i17" strokeWidth={1.9} />
           </div>
-          <div className="flex items-baseline gap-3">
-            <span className="text-[14px] font-semibold tracking-[-0.03em]">DiskLens</span>
-            <span className="hidden text-[11px] text-fg3 sm:block">空间分析器</span>
+          <div className="titlebar-names">
+            <span className="app-name">DiskLens</span>
+            <span className="app-tagline">空间分析器</span>
           </div>
         </div>
-        <div className="flex items-center gap-3">
-          <span className="flex items-center gap-1.5 text-[11px] text-fg2" title={scan.native ? "Rust 后端正在处理本机磁盘" : "浏览器中使用模拟数据"}>
-            <span className={`h-[6px] w-[6px] rounded-full ${scan.native ? "bg-success" : "bg-warning"}`} />
+        <div className="titlebar-right">
+          <span className="conn-pill" title={scan.native ? "Rust 后端正在处理本机磁盘" : "浏览器中使用模拟数据"}>
+            <span className={`dot-6 ${scan.native ? "is-ok" : "is-warn"}`} />
             {scan.native ? "已连接本机" : "演示模式"}
           </span>
-          <span className="h-4 w-px bg-stroke" />
+          <span className="vrule-16" />
         </div>
       </div>
 
-      <div className="flex min-h-0 flex-1">
+      <div className="body-row">
         {/* 导航栏 */}
-        <aside className="fluent-sidebar flex w-[216px] shrink-0 flex-col border-r border-stroke bg-layer px-3 py-5 max-md:w-[62px] max-md:px-2">
-          <div className="mb-3 px-3 text-[10px] font-semibold tracking-[0.08em] text-fg3 max-md:hidden">浏览</div>
-          <nav className="space-y-1" aria-label="主导航">
+        <aside className="fluent-sidebar sidebar">
+          <div className="sidebar-label">浏览</div>
+          <nav className="stack-1" aria-label="主导航">
             {NAV_ITEMS.map(({ id, label, icon: Icon }) => {
               const active = id === viewMode;
               return (
@@ -198,84 +198,79 @@ export default function App() {
                   key={id}
                   onClick={() => setViewMode(id)}
                   title={label}
-                  className={`fluent-nav-item relative flex h-[39px] w-full items-center gap-3 rounded-[7px] px-3 text-left text-[12px] max-md:justify-center max-md:px-0 ${
-                    active ? "bg-card font-semibold text-accent shadow-sm" : "text-fg hover:bg-subtle"
-                  }`}
+                  className={`fluent-nav-item nav-item ${active ? "nav-item--active" : ""}`}
                 >
-                  {active && <span className="absolute bottom-2 left-0 top-2 w-[3px] rounded-r-full bg-accent" />}
-                  <Icon className={`h-[17px] w-[17px] shrink-0 ${active ? "text-accent" : "text-fg2"}`} strokeWidth={1.8} />
-                  <span className="max-md:hidden">{label}</span>
+                  {active && <span className="nav-item-bar" />}
+                  <Icon className={`nav-icon ${active ? "u-accent" : ""}`} strokeWidth={1.8} />
+                  <span className="nav-text">{label}</span>
                 </button>
               );
             })}
           </nav>
 
-          <div className="mx-3 my-5 border-t border-stroke max-md:mx-1" />
-          <div className="mb-2 px-3 text-[10px] font-semibold tracking-[0.08em] text-fg3 max-md:hidden">磁盘</div>
-          <div className="space-y-1">
+          <div className="sidebar-divider" />
+          <div className="sidebar-label sidebar-label--tight">磁盘</div>
+          <div className="stack-1">
             {drives.map((drive, index) => (
               <button
                 key={drive.drive}
                 onClick={() => handleDriveChange(index)}
                 disabled={scanning}
                 title={`${drive.drive} · ${drive.label}`}
-                className={`flex w-full items-start gap-2.5 rounded-[7px] px-2.5 py-2 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-60 max-md:justify-center max-md:px-1 ${index === driveIdx ? "bg-accent-soft text-accent" : "text-fg hover:bg-subtle"}`}
+                className={`t-colors drive-item ${index === driveIdx ? "drive-item--active" : ""}`}
               >
-                <HardDrive className={`mt-0.5 h-[16px] w-[16px] shrink-0 ${index === driveIdx ? "text-accent" : "text-fg2"}`} strokeWidth={1.8} />
-                <div className="min-w-0 flex-1 max-md:hidden">
-                  <div className="flex items-baseline justify-between gap-1 text-[11px]">
-                    <span className="font-semibold">{drive.drive}</span>
-                    <span className="shrink-0 text-[10px] font-normal text-fg3">{formatBytes(drive.totalCap)}</span>
+                <HardDrive className={`drive-icon ${index === driveIdx ? "u-accent" : ""}`} strokeWidth={1.8} />
+                <div className="drive-body">
+                  <div className="drive-head">
+                    <span className="u-font-semibold">{drive.drive}</span>
+                    <span className="drive-cap">{formatBytes(drive.totalCap)}</span>
                   </div>
-                  <div className="mt-0.5 truncate text-[10px] text-fg2">{drive.label}</div>
+                  <div className="drive-label u-truncate">{drive.label}</div>
                   {drive.usedBytes > 0 && (
-                    <div className="mt-2 h-[3px] overflow-hidden rounded-full bg-stroke-strong">
-                      <div className="h-full rounded-full bg-accent" style={{ width: `${Math.min(100, drive.usedBytes / drive.totalCap * 100)}%` }} />
+                    <div className="meter meter-3">
+                      <div className="meter-fill" style={{ width: `${Math.min(100, drive.usedBytes / drive.totalCap * 100)}%` }} />
                     </div>
                   )}
                 </div>
               </button>
             ))}
-            {drives.length === 0 && <p className="px-3 text-[11px] text-fg3 max-md:hidden">正在检测磁盘...</p>}
+            {drives.length === 0 && <p className="sidebar-note">正在检测磁盘...</p>}
           </div>
         </aside>
 
         {/* 主内容 */}
-        <main className="flex min-w-0 flex-1 flex-col overflow-hidden">
+        <main className="main-col">
           {/* 未以管理员运行时提醒：MFT 直读需要提权，否则整卷扫描回退到并行遍历会慢一个数量级 */}
           {scan.native && scan.elevated === false && (
-            <div
-              role="status"
-              className="mx-8 mt-6 flex shrink-0 items-start gap-2.5 rounded-lg border border-warning-soft bg-warning-soft px-3.5 py-2.5 text-[12.5px] text-fg2 max-sm:mx-4"
-            >
-              <ShieldAlert className="mt-px h-4 w-4 shrink-0 text-warning" aria-hidden="true" />
-              <div className="min-w-0">
-                <span className="font-medium text-fg">当前未以管理员身份运行。</span>
+            <div role="status" className="notice notice--elevated">
+              <ShieldAlert className="notice-icon" aria-hidden="true" />
+              <div className="u-min-w-0">
+                <span className="notice-body">当前未以管理员身份运行。</span>
                 整卷扫描会回退到并行遍历模式，明显更慢。请关闭 DiskLens，右键图标选择「以管理员身份运行」重新启动，即可使用 NTFS $MFT 直读（快一个数量级）。
               </div>
             </div>
           )}
-          <header className="shrink-0 px-8 pb-4 pt-7 max-sm:px-4 max-sm:pt-4">
-            <div className="mb-3 flex items-center gap-1.5 text-[11px] text-fg3">
-              <span>此电脑</span><ChevronRight className="h-3 w-3" />
-              <span>{activeDrive.drive}</span><ChevronRight className="h-3 w-3" />
-              <span className="font-medium text-fg2">{VIEW_TITLES[viewMode]}</span>
+          <header className="page-head">
+            <div className="breadcrumb">
+              <span>此电脑</span><ChevronRight className="i12" />
+              <span>{activeDrive.drive}</span><ChevronRight className="i12" />
+              <span className="crumb-current">{VIEW_TITLES[viewMode]}</span>
             </div>
-            <div className="flex flex-wrap items-end justify-between gap-4">
-              <div className="min-w-0">
-                <div className="flex items-center gap-3">
-                  <h1 className="text-[27px] font-semibold tracking-[-0.035em] text-fg">{VIEW_TITLES[viewMode]}</h1>
-                  {scan.native && <ShieldCheck className="h-[17px] w-[17px] text-success" aria-label="本机扫描" />}
+            <div className="head-row">
+              <div className="u-min-w-0">
+                <div className="head-title-row">
+                  <h1 className="page-title">{VIEW_TITLES[viewMode]}</h1>
+                  {scan.native && <ShieldCheck className="i17 u-success" aria-label="本机扫描" />}
                 </div>
-                <p className="mt-1 truncate text-[12px] text-fg2">{activeDrive.label} <span className="px-1 text-fg3">/</span> {activeDrive.fsType} <span className="px-1 text-fg3">/</span> {formatBytes(activeDrive.totalCap)}</p>
+                <p className="page-sub u-truncate">{activeDrive.label} <span className="path-sep">/</span> {activeDrive.fsType} <span className="path-sep">/</span> {formatBytes(activeDrive.totalCap)}</p>
               </div>
               {scanning ? (
-                <button onClick={scan.cancel} className="flex h-9 items-center gap-2 rounded-md border border-stroke-strong bg-card px-3.5 text-[12px] font-medium text-fg shadow-sm transition hover:bg-card-hover">
-                  <Square className="h-3 w-3 fill-danger text-danger" /> 停止扫描
+                <button onClick={scan.cancel} className="t-all btn-ghost">
+                  <Square className="i12 u-danger i-fill-danger" /> 停止扫描
                 </button>
               ) : (
-                <button onClick={() => startScan()} disabled={drives.length === 0} className="flex h-9 items-center gap-2 rounded-md bg-accent px-4 text-[12px] font-semibold text-on-accent shadow-sm transition hover:bg-accent-hover active:scale-[.98] disabled:bg-stroke-strong">
-                  {status === "done" ? <RefreshCw className="h-[14px] w-[14px]" /> : <Play className="h-[14px] w-[14px] fill-current" />}
+                <button onClick={() => startScan()} disabled={drives.length === 0} className="t-all btn-primary btn-primary--fx">
+                  {status === "done" ? <RefreshCw className="i14" /> : <Play className="i14 i-fill-current" />}
                   {status === "done" ? "重新扫描" : "开始扫描"}
                 </button>
               )}
@@ -283,40 +278,40 @@ export default function App() {
           </header>
 
           {/* Explorer-like command bar */}
-          <div className="mx-8 flex min-h-[52px] shrink-0 flex-wrap items-center gap-2 border-y border-stroke py-2 max-sm:mx-4">
-            <label className="relative flex h-8 min-w-[180px] max-w-[310px] flex-1 items-center rounded-md border border-stroke-strong bg-card shadow-sm transition-colors focus-within:border-accent focus-within:ring-2 focus-within:ring-accent-soft">
-              <Search className="ml-2.5 h-4 w-4 shrink-0 text-fg3" strokeWidth={1.8} />
-              <input id="disklens-search" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="搜索文件或文件夹" className="min-w-0 flex-1 bg-transparent px-2 text-[12px] text-fg outline-none placeholder:text-fg3" />
-              {searchQuery ? <button onClick={() => setSearchQuery("")} className="mr-2 text-fg3 hover:text-fg" aria-label="清除搜索"><X className="h-3.5 w-3.5" /></button> : <kbd className="mr-2 hidden rounded border border-stroke px-1.5 py-0.5 text-[10px] text-fg3 lg:block">Ctrl K</kbd>}
+          <div className="cmdbar">
+            <label className="search-field">
+              <Search className="search-icon" strokeWidth={1.8} />
+              <input id="disklens-search" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="搜索文件或文件夹" className="search-input" />
+              {searchQuery ? <button onClick={() => setSearchQuery("")} className="search-clear" aria-label="清除搜索"><X className="i14" /></button> : <kbd className="kbd-hint">Ctrl K</kbd>}
             </label>
-            <div className="relative">
-              <button onClick={() => setShowScanOptions((v) => !v)} aria-expanded={showScanOptions} className={`flex h-8 items-center gap-2 rounded-md px-2.5 text-[12px] transition-colors ${showScanOptions ? "bg-accent-soft text-accent" : "text-fg2 hover:bg-subtle"}`}>
-                <Settings2 className="h-[15px] w-[15px]" strokeWidth={1.8} /> 扫描选项 <ChevronDown className="h-3 w-3" />
+            <div className="u-relative">
+              <button onClick={() => setShowScanOptions((v) => !v)} aria-expanded={showScanOptions} className={`t-colors options-btn ${showScanOptions ? "options-btn--open" : ""}`}>
+                <Settings2 className="i15" strokeWidth={1.8} /> 扫描选项 <ChevronDown className="i12" />
               </button>
-              {showScanOptions && <div className="absolute left-0 top-10 z-30 w-[265px] rounded-[9px] border border-stroke bg-card p-4 shadow-flyout">
-                <div className="text-[12px] font-semibold text-fg">扫描设置</div>
-                <p className="mt-1 text-[11px] leading-relaxed text-fg2">更改设置后，在下次扫描时生效。</p>
-                <label className="mt-4 block text-[11px] font-medium text-fg2">扫描引擎</label>
-                <select value={engine} onChange={(e) => setEngine(e.target.value as EngineChoice)} disabled={scanning} className="mt-1.5 h-8 w-full rounded-md border border-stroke-strong bg-card px-2 text-[12px] outline-none focus:border-accent disabled:opacity-50"><option value="mft">自动（优先 NTFS MFT）</option><option value="rayon">并行目录遍历</option></select>
-                <label className="mt-3 block text-[11px] font-medium text-fg2">工作线程</label>
-                <select value={threads} onChange={(e) => setThreads(Number(e.target.value))} disabled={scanning} className="mt-1.5 h-8 w-full rounded-md border border-stroke-strong bg-card px-2 text-[12px] outline-none focus:border-accent disabled:opacity-50">{[4, 8, 12, 16, 32].map((n) => <option key={n} value={n}>{n} 线程</option>)}</select>
-                <div className="mt-3 flex gap-2 border-t border-stroke pt-3 text-[10px] leading-relaxed text-fg2"><Info className="mt-0.5 h-3.5 w-3.5 shrink-0" /> MFT 仅适用于 NTFS 整卷，可能需要管理员权限。</div>
+              {showScanOptions && <div className="popover">
+                <div className="pop-title">扫描设置</div>
+                <p className="pop-note">更改设置后，在下次扫描时生效。</p>
+                <label className="pop-label">扫描引擎</label>
+                <select value={engine} onChange={(e) => setEngine(e.target.value as EngineChoice)} disabled={scanning} className="pop-select"><option value="mft">自动（优先 NTFS MFT）</option><option value="rayon">并行目录遍历</option></select>
+                <label className="pop-label pop-label--tight">工作线程</label>
+                <select value={threads} onChange={(e) => setThreads(Number(e.target.value))} disabled={scanning} className="pop-select">{[4, 8, 12, 16, 32].map((n) => <option key={n} value={n}>{n} 线程</option>)}</select>
+                <div className="pop-foot"><Info className="i14 u-shrink-0" /> MFT 仅适用于 NTFS 整卷，可能需要管理员权限。</div>
               </div>}
             </div>
-            <div className="mx-1 h-4 w-px bg-stroke max-sm:hidden" />
-            <span className="hidden text-[11px] text-fg3 sm:inline">{scan.native ? "真实磁盘" : "演示数据"}</span>
-            {scanning && <span className="ml-auto flex items-center gap-2 text-[11px] font-medium text-accent"><span className="h-1.5 w-1.5 animate-pulse rounded-full bg-accent" />正在分析 {scan.progress > 0 ? `${(scan.progress * 100).toFixed(0)}%` : "..."}</span>}
-            {!scanning && stats.files > 0 && <span className="ml-auto text-[11px] text-fg3">扫描于 {formatMs(scan.elapsed)} 内完成</span>}
+            <div className="cmd-divider vrule-16" />
+            <span className="cmd-hint">{scan.native ? "真实磁盘" : "演示数据"}</span>
+            {scanning && <span className="cmd-live"><span className="dot-6 pulse u-bg-accent" />正在分析 {scan.progress > 0 ? `${(scan.progress * 100).toFixed(0)}%` : "..."}</span>}
+            {!scanning && stats.files > 0 && <span className="cmd-note">扫描于 {formatMs(scan.elapsed)} 内完成</span>}
           </div>
 
           {/* Compact capacity summary, not a dashboard of competing cards */}
-          <section className="mx-8 flex shrink-0 flex-wrap items-center gap-x-9 gap-y-3 py-4 max-sm:mx-4">
-            <div className="flex min-w-[240px] flex-[2] items-center gap-3.5">
-              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-[9px] bg-accent-soft text-accent"><HardDrive className="h-[19px] w-[19px]" strokeWidth={1.7} /></div>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-baseline justify-between gap-2"><span className="text-[15px] font-semibold tracking-[-.02em] text-fg">{formatBytes(stats.bytes)}</span><span className="text-[11px] text-fg2">已分析 / {formatBytes(activeDrive.totalCap)}</span></div>
-                <div className="mt-2 h-[5px] overflow-hidden rounded-full bg-stroke-strong"><div className="h-full rounded-full bg-accent transition-[width] duration-500" style={{ width: `${Math.max(scanning || stats.bytes > 0 ? 1 : 0, capacityPct)}%` }} /></div>
-                {scan.native && activeDrive.usedBytes > 0 && <span className="mt-1 block text-[10px] text-fg3">磁盘实际已用 {diskUsedPct.toFixed(0)}%</span>}
+          <section className="capacity">
+            <div className="capacity-lead">
+              <div className="capacity-mark"><HardDrive className="i19" strokeWidth={1.7} /></div>
+              <div className="capacity-body">
+                <div className="capacity-line"><span className="capacity-value">{formatBytes(stats.bytes)}</span><span className="capacity-sub">已分析 / {formatBytes(activeDrive.totalCap)}</span></div>
+                <div className="meter meter-5"><div className="meter-fill meter-fill--slow" style={{ width: `${Math.max(scanning || stats.bytes > 0 ? 1 : 0, capacityPct)}%` }} /></div>
+                {scan.native && activeDrive.usedBytes > 0 && <span className="capacity-note">磁盘实际已用 {diskUsedPct.toFixed(0)}%</span>}
               </div>
             </div>
             <Metric label="文件" value={formatCount(stats.files)} />
@@ -326,14 +321,14 @@ export default function App() {
           </section>
 
           {scan.message && (
-            <div className="mx-7 mt-3 flex items-start gap-2 rounded-md border border-warning-soft bg-warning-soft px-3 py-2 text-[12px] text-warning max-sm:mx-4">
-              <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-warning" />
-              <span className="flex-1">{scan.message}</span>
+            <div className="alert-strip">
+              <AlertTriangle className="i14 u-shrink-0" />
+              <span className="u-flex-1">{scan.message}</span>
             </div>
           )}
 
           {/* 工作区 */}
-          <div className="min-h-0 flex-1 px-8 pb-5 pt-1 max-sm:px-4">
+          <div className="workspace">
             {!tree && viewMode !== "performance" && (
               <EmptyState
                 native={scan.native}
@@ -346,7 +341,7 @@ export default function App() {
             )}
 
             {tree && viewMode === "overview" && (
-              <div className="grid h-full min-h-0 grid-cols-1 grid-rows-2 gap-3 lg:grid-cols-[minmax(360px,40%)_minmax(0,1fr)] lg:grid-rows-1">
+              <div className="overview-grid">
                 <section className={SURFACE}>
                   <TreeList
                     tree={tree}
@@ -380,7 +375,7 @@ export default function App() {
             )}
 
             {tree && viewMode === "map" && (
-              <section className={`h-full ${SURFACE}`}>
+              <section className={`u-h-full ${SURFACE}`}>
                 <Treemap
                   tree={tree}
                   rootId={cursor}
@@ -397,7 +392,7 @@ export default function App() {
             )}
 
             {tree && viewMode === "files" && (
-              <section className={`h-full ${SURFACE}`}>
+              <section className={`u-h-full ${SURFACE}`}>
                 <TreeList
                   tree={tree}
                   rootId={0}
@@ -415,13 +410,13 @@ export default function App() {
             )}
 
             {tree && viewMode === "largest" && (
-              <section className={`h-full ${SURFACE}`}>
+              <section className={`u-h-full ${SURFACE}`}>
                 <TopFilesView tree={tree} version={version} onSelect={setSelected} onEnter={handleEnter} onDelete={handleDelete} />
               </section>
             )}
 
             {tree && viewMode === "types" && (
-              <section className={`h-full ${SURFACE}`}>
+              <section className={`u-h-full ${SURFACE}`}>
                 <ExtensionView
                   tree={tree}
                   version={version}
@@ -434,41 +429,41 @@ export default function App() {
             )}
 
             {viewMode === "performance" && (
-              <section className={`h-full ${SURFACE}`}>
+              <section className={`u-h-full ${SURFACE}`}>
                 <BenchmarkView />
               </section>
             )}
           </div>
 
           {/* 状态栏 */}
-          <footer className="flex h-9 shrink-0 items-center justify-between gap-4 border-t border-stroke bg-acrylic px-8 text-[11px] text-fg2 max-sm:px-4">
-            <div className="flex min-w-0 items-center gap-2">
+          <footer className="statusbar">
+            <div className="status-left">
               {scanning ? (
-                <Activity className="h-3.5 w-3.5 shrink-0 animate-pulse text-accent" />
+                <Activity className="i14 u-shrink-0 pulse u-accent" />
               ) : status === "failed" ? (
-                <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-danger" />
+                <AlertTriangle className="i14 u-shrink-0 u-danger" />
               ) : (
-                <Check className="h-3.5 w-3.5 shrink-0 text-success" />
+                <Check className="i14 u-shrink-0 u-success" />
               )}
-              <span className="shrink-0">{statusText}</span>
+              <span className="u-shrink-0">{statusText}</span>
               {scanning && scan.native && scan.currentPath && (
-                <span className="truncate text-fg3" title={scan.currentPath}>
+                <span className="status-path" title={scan.currentPath}>
                   · {scan.currentPath}
                 </span>
               )}
               {!scanning && scan.engineUsed && (
-                <span className="hidden shrink-0 text-fg3 sm:inline">· {ENGINE_LABELS[scan.engineUsed] ?? scan.engineUsed}</span>
+                <span className="status-engine">· {ENGINE_LABELS[scan.engineUsed] ?? scan.engineUsed}</span>
               )}
               {stats.freedBytes > 0 && (
-                <span className="ml-2 shrink-0 text-danger">
+                <span className="status-freed">
                   {scan.native ? "已移到回收站" : "模拟释放"} {formatBytes(stats.freedBytes)}
                 </span>
               )}
             </div>
-            <div className="flex shrink-0 items-center gap-4">
-              <span className="hidden sm:inline">{formatCount(stats.nodeCount)} 个节点</span>
-              <span className="hidden sm:inline">前端内存 {memoryMB.toFixed(1)} MB</span>
-              <span className="hidden items-center gap-1 lg:flex"><span className="h-1.5 w-1.5 rounded-full bg-success" />{scan.native ? "Rust 后端" : "浏览器演示"}</span>
+            <div className="status-right">
+              <span className="status-metric">{formatCount(stats.nodeCount)} 个节点</span>
+              <span className="status-metric">前端内存 {memoryMB.toFixed(1)} MB</span>
+              <span className="status-backend"><span className="dot-6 is-ok" />{scan.native ? "Rust 后端" : "浏览器演示"}</span>
             </div>
           </footer>
         </main>
@@ -479,9 +474,9 @@ export default function App() {
 
 function Metric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="min-w-[77px] border-l border-stroke pl-5 leading-tight max-sm:min-w-[64px] max-sm:pl-3">
-      <div className="text-[10px] text-fg3">{label}</div>
-      <div className="mt-1.5 text-[14px] font-semibold tabular-nums tracking-[-.02em] text-fg">{value}</div>
+    <div className="metric">
+      <div className="metric-label">{label}</div>
+      <div className="metric-value">{value}</div>
     </div>
   );
 }
@@ -502,35 +497,31 @@ function EmptyState({
   onScan: () => void;
 }) {
   return (
-    <div className={`grid h-full place-items-center ${SURFACE}`}>
-      <div className="max-w-md px-6 text-center">
-        <div className="mx-auto grid h-12 w-12 place-items-center rounded-xl bg-accent-soft text-accent">
-          {scanning ? <Activity className="h-6 w-6 animate-pulse" /> : <HardDrive className="h-6 w-6" />}
+    <div className={`empty-state ${SURFACE}`}>
+      <div className="empty-inner">
+        <div className="empty-mark">
+          {scanning ? <Activity className="i24 pulse" /> : <HardDrive className="i24" />}
         </div>
         {scanning ? (
           <>
-            <h2 className="mt-4 text-[15px] font-semibold">正在扫描…</h2>
-            <div className="mx-auto mt-3 h-1.5 w-64 overflow-hidden rounded-full bg-stroke-strong">
-              <div className="h-full rounded-full bg-accent transition-[width] duration-200" style={{ width: `${Math.max(2, progress * 100)}%` }} />
+            <h2 className="empty-title">正在扫描…</h2>
+            <div className="meter meter-6">
+              <div className="meter-fill meter-fill--fast" style={{ width: `${Math.max(2, progress * 100)}%` }} />
             </div>
-            <p className="mt-3 truncate text-[11px] text-fg3" title={currentPath}>
+            <p className="empty-path u-truncate" title={currentPath}>
               {currentPath || "准备中"}
             </p>
           </>
         ) : (
           <>
-            <h2 className="mt-4 text-[15px] font-semibold">选择磁盘开始分析</h2>
-            <p className="mt-2 text-[12px] leading-relaxed text-fg2">
+            <h2 className="empty-title">选择磁盘开始分析</h2>
+            <p className="empty-desc">
               {native
                 ? "扫描整个 NTFS 卷时，以管理员身份运行可启用 MFT 直读（通常数秒完成），否则自动使用多线程并行遍历。"
                 : "当前在浏览器中运行，使用模拟数据。"}
             </p>
-            <button
-              onClick={onScan}
-              disabled={!canScan}
-              className="mt-4 inline-flex h-9 items-center gap-2 rounded-md bg-accent px-4 text-[12px] font-semibold text-on-accent hover:bg-accent-hover disabled:bg-stroke-strong"
-            >
-              <Play className="h-3.5 w-3.5 fill-current" />
+            <button onClick={onScan} disabled={!canScan} className="btn-primary">
+              <Play className="i14 i-fill-current" />
               扫描磁盘
             </button>
           </>

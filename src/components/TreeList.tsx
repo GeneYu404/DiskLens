@@ -93,25 +93,25 @@ export default function TreeList({
   };
 
   return (
-    <div className="tree-list flex h-full min-h-0 flex-col bg-card text-fg">
-      <div className="flex h-12 shrink-0 items-center justify-between border-b border-stroke px-4">
-        <div className="flex items-center gap-2 text-[13px] font-semibold">
-          <FolderOpen className="h-4 w-4 text-warning" strokeWidth={1.8} />
+    <div className="tree-list list-panel">
+      <div className="panel-head">
+        <div className="panel-title">
+          <FolderOpen className="panel-title-icon" strokeWidth={1.8} />
           文件资源
         </div>
-        <span className="text-[11px] text-fg3">{formatCount(rows.length)} 项</span>
+        <span className="panel-note">{formatCount(rows.length)} 项</span>
       </div>
 
-      <div className="tree-grid grid h-9 shrink-0 items-center border-b border-stroke bg-layer-solid px-3 text-[11px] font-medium text-fg2">
-        <button onClick={() => sort("name")} className="text-left hover:text-accent">名称</button>
-        <button onClick={() => sort("size")} className="text-right hover:text-accent">大小</button>
-        <span className="text-right">占比</span>
-        <button onClick={() => sort("count")} className="tree-count text-right hover:text-accent">文件数</button>
-        <button onClick={() => sort("age")} className="tree-age text-right hover:text-accent">修改</button>
+      <div className="tree-grid col-head tree-head">
+        <button onClick={() => sort("name")} className="col-head-btn">名称</button>
+        <button onClick={() => sort("size")} className="col-head-btn--right col-head-btn">大小</button>
+        <span className="col-right">占比</span>
+        <button onClick={() => sort("count")} className="tree-count col-head-btn--right col-head-btn">文件数</button>
+        <button onClick={() => sort("age")} className="tree-age col-head-btn--right col-head-btn">修改</button>
       </div>
 
-      <div ref={scrollRef} className="min-h-0 flex-1 overflow-auto" onScroll={(e) => setScrollTop(e.currentTarget.scrollTop)}>
-        <div className="relative" style={{ height: rows.length * ROW_HEIGHT }}>
+      <div ref={scrollRef} className="list-scroll" onScroll={(e) => setScrollTop(e.currentTarget.scrollTop)}>
+        <div className="u-relative" style={{ height: rows.length * ROW_HEIGHT }}>
           {rows.slice(start, end).map((row, offset) => {
             const index = start + offset;
             const id = row.id;
@@ -125,38 +125,38 @@ export default function TreeList({
                 key={id}
                 onClick={() => onSelect(id)}
                 onDoubleClick={() => row.isDir && onEnter(id)}
-                className={`tree-grid group absolute left-0 right-0 grid items-center border-b border-stroke pr-3 text-[12px] transition-colors ${selectedRow ? "bg-accent-soft text-accent" : "hover:bg-subtle"}`}
+                className={`tree-grid t-colors tree-row ${selectedRow ? "tree-row--on" : ""}`}
                 style={{ top: index * ROW_HEIGHT, height: ROW_HEIGHT }}
               >
-                <div className="flex min-w-0 items-center gap-1.5" style={{ paddingLeft: 8 + row.depth * 14 }}>
+                <div className="tree-cell" style={{ paddingLeft: 8 + row.depth * 14 }}>
                   <button
-                    className="grid h-5 w-4 shrink-0 place-items-center text-fg2 hover:text-accent"
+                    className="tree-toggle"
                     onClick={(event) => { event.stopPropagation(); if (row.isDir && row.hasChildren) toggle(id); }}
                     aria-label={expandedRow ? "折叠" : "展开"}
                   >
-                    {row.hasChildren ? (expandedRow ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />) : null}
+                    {row.hasChildren ? (expandedRow ? <ChevronDown className="i14" /> : <ChevronRight className="i14" />) : null}
                   </button>
                   {row.isDir ? (
-                    expandedRow ? <FolderOpen className="h-4 w-4 shrink-0 text-warning" strokeWidth={1.7} /> : <Folder className="h-4 w-4 shrink-0 text-warning" strokeWidth={1.7} />
-                  ) : <File className="h-4 w-4 shrink-0" style={{ color: category?.color ?? "var(--text-2)" }} strokeWidth={1.7} />}
-                  <span className={`truncate ${row.isDir ? "font-medium text-fg" : "text-fg"}`} title={name}>{name}</span>
-                  <div className="ml-auto hidden shrink-0 items-center gap-0.5 bg-inherit opacity-0 group-hover:flex group-hover:opacity-100">
-                    {row.isDir && <button onClick={(e) => { e.stopPropagation(); onEnter(id); }} className="rounded p-1 text-fg2 hover:bg-subtle" title="打开目录"><ExternalLink className="h-3.5 w-3.5" /></button>}
-                    <button onClick={(e) => { e.stopPropagation(); void copyPath(id); }} className="rounded p-1 text-fg2 hover:bg-subtle" title="复制路径">{copiedId === id ? <Check className="h-3.5 w-3.5 text-success" /> : <Copy className="h-3.5 w-3.5" />}</button>
-                    {onDelete && <button onClick={(e) => { e.stopPropagation(); onDelete(id); }} className="rounded p-1 text-danger hover:bg-danger-soft" title="模拟释放空间"><Trash2 className="h-3.5 w-3.5" /></button>}
+                    expandedRow ? <FolderOpen className="tree-folder" strokeWidth={1.7} /> : <Folder className="tree-folder" strokeWidth={1.7} />
+                  ) : <File className="tree-file" style={{ color: category?.color ?? "var(--text-2)" }} strokeWidth={1.7} />}
+                  <span className={`tree-name ${row.isDir ? "tree-name--dir" : ""}`} title={name}>{name}</span>
+                  <div className="tree-cell-actions">
+                    {row.isDir && <button onClick={(e) => { e.stopPropagation(); onEnter(id); }} className="icon-btn" title="打开目录"><ExternalLink className="i14" /></button>}
+                    <button onClick={(e) => { e.stopPropagation(); void copyPath(id); }} className="icon-btn" title="复制路径">{copiedId === id ? <Check className="i14 u-success" /> : <Copy className="i14" />}</button>
+                    {onDelete && <button onClick={(e) => { e.stopPropagation(); onDelete(id); }} className="icon-btn--danger icon-btn" title="模拟释放空间"><Trash2 className="i14" /></button>}
                   </div>
                 </div>
-                <span className="text-right tabular-nums text-fg">{formatBytes(tree.size[id])}</span>
-                <span className="text-right tabular-nums text-fg2">{pct < 0.1 ? "<0.1" : pct.toFixed(1)}%</span>
-                <span className="tree-count text-right tabular-nums text-fg2">{row.isDir ? formatCount(tree.fileCount[id]) : "1"}</span>
-                <span className="tree-age text-right tabular-nums text-fg2">{tree.modDaysAgo[id] || 0} 天</span>
+                <span className="tree-size">{formatBytes(tree.size[id])}</span>
+                <span className="tree-pct">{pct < 0.1 ? "<0.1" : pct.toFixed(1)}%</span>
+                <span className="tree-count tree-pct">{row.isDir ? formatCount(tree.fileCount[id]) : "1"}</span>
+                <span className="tree-age tree-pct">{tree.modDaysAgo[id] || 0} 天</span>
               </div>
             );
           })}
         </div>
       </div>
 
-      <div className="flex h-7 shrink-0 items-center justify-between border-t border-stroke px-3 text-[10px] text-fg2">
+      <div className="panel-foot panel-foot--spread">
         <span>已展开 {formatCount(rows.length)} 项</span>
         <span>当前渲染 {end - start} 行</span>
       </div>

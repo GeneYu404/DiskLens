@@ -215,22 +215,22 @@ export default function Treemap({
   const pathIds = tree.pathIds(rootId);
 
   return (
-    <div className="flex h-full min-h-0 flex-col bg-card text-fg">
-      <div className="flex h-12 shrink-0 items-center justify-between border-b border-stroke px-4">
-        <div className="flex min-w-0 items-center gap-2">
-          <Sparkles className="h-4 w-4 shrink-0 text-accent" strokeWidth={1.8} />
-          <span className="shrink-0 text-[13px] font-semibold">空间地图</span>
-          <span className="mx-1 h-3.5 w-px shrink-0 bg-stroke" />
-          <div className="flex min-w-0 items-center gap-1 overflow-hidden text-[11px] text-fg2">
-            {pathIds.slice(-3).map((id, index) => <span key={id} className="flex min-w-0 items-center gap-1">
-              {index > 0 && <span className="text-fg3">/</span>}
-              <button onClick={() => onEnter(id)} className={`max-w-[110px] truncate hover:text-accent ${index === pathIds.slice(-3).length - 1 ? "font-medium text-fg2" : ""}`}>{tree.name(id)}</button>
+    <div className="list-panel">
+      <div className="panel-head">
+        <div className="map-head-main">
+          <Sparkles className="panel-title-icon panel-title-icon--accent" strokeWidth={1.8} />
+          <span className="u-shrink-0 panel-title-text">空间地图</span>
+          <span className="vrule-14" />
+          <div className="map-crumbs">
+            {pathIds.slice(-3).map((id, index) => <span key={id} className="crumb">
+              {index > 0 && <span className="crumb-sep">/</span>}
+              <button onClick={() => onEnter(id)} className={`crumb-btn ${index === pathIds.slice(-3).length - 1 ? "crumb-btn--current" : ""}`}>{tree.name(id)}</button>
             </span>)}
           </div>
         </div>
-        <div className="flex items-center gap-1.5">
+        <div className="map-head-tools">
           {onColorModeChange && (
-            <select value={colorMode} onChange={(e) => onColorModeChange(e.target.value as TreemapColorMode)} className="h-7 max-w-[115px] rounded border border-stroke bg-layer-solid px-1.5 text-[11px] text-fg outline-none hover:bg-subtle sm:max-w-none">
+            <select value={colorMode} onChange={(e) => onColorModeChange(e.target.value as TreemapColorMode)} className="map-select">
               <option value="category">按类型着色</option>
               <option value="ext">按扩展名着色</option>
               <option value="depth">按目录层级着色</option>
@@ -238,23 +238,23 @@ export default function Treemap({
             </select>
           )}
           {parentId >= 0 && (
-            <button onClick={() => onEnter(parentId)} className="flex h-7 items-center gap-1 rounded px-2 text-[11px] text-fg hover:bg-subtle" title="上一级">
-              <ChevronUp className="h-3.5 w-3.5" /> 上一级
+            <button onClick={() => onEnter(parentId)} className="map-up" title="上一级">
+              <ChevronUp className="i14" /> 上一级
             </button>
           )}
           {rootId !== 0 && (
-            <button onClick={() => onEnter(0)} className="grid h-7 w-7 place-items-center rounded text-fg2 hover:bg-subtle" title="回到磁盘根目录">
-              <RotateCcw className="h-3.5 w-3.5" />
+            <button onClick={() => onEnter(0)} className="map-home" title="回到磁盘根目录">
+              <RotateCcw className="i14" />
             </button>
           )}
         </div>
       </div>
 
-      <div ref={mapRef} className="relative min-h-0 flex-1 overflow-hidden bg-dataviz-canvas">
+      <div ref={mapRef} className="map-canvas">
         <canvas
           ref={canvasRef}
           style={{ width: size.w, height: size.h }}
-          className="block h-full w-full cursor-crosshair"
+          className="map-canvas-el"
           onMouseMove={(event) => {
             const rect = event.currentTarget.getBoundingClientRect();
             const x = event.clientX - rect.left;
@@ -268,24 +268,24 @@ export default function Treemap({
         />
 
         {hover && (
-          <div className="pointer-events-none absolute z-10 w-[250px] rounded-md border border-stroke-strong bg-acrylic p-3 shadow-flyout backdrop-blur" style={{ left: Math.min(hover.x + 12, Math.max(8, size.w - 265)), top: Math.min(hover.y + 12, Math.max(8, size.h - 100)) }}>
-            <div className="truncate text-[12px] font-semibold text-fg">{tree.name(hover.id)}</div>
-            <div className="mt-0.5 truncate text-[10px] text-fg2">{tree.fullPath(hover.id)}</div>
-            <div className="mt-2 flex items-center justify-between border-t border-stroke pt-2 text-[11px]">
-              <span className="font-semibold tabular-nums text-accent">{formatBytes(tree.size[hover.id])}</span>
-              <span className="text-fg2">{tree.isDir(hover.id) ? `${formatCount(tree.fileCount[hover.id])} 个文件` : `.${extOf(tree.name(hover.id))}`}</span>
+          <div className="map-tip" style={{ left: Math.min(hover.x + 12, Math.max(8, size.w - 265)), top: Math.min(hover.y + 12, Math.max(8, size.h - 100)) }}>
+            <div className="map-tip-name">{tree.name(hover.id)}</div>
+            <div className="map-tip-path">{tree.fullPath(hover.id)}</div>
+            <div className="map-tip-line">
+              <span className="map-tip-size">{formatBytes(tree.size[hover.id])}</span>
+              <span className="u-fg2">{tree.isDir(hover.id) ? `${formatCount(tree.fileCount[hover.id])} 个文件` : `.${extOf(tree.name(hover.id))}`}</span>
             </div>
           </div>
         )}
       </div>
 
-      <div className="flex h-8 shrink-0 items-center justify-between border-t border-stroke px-4 text-[10px] text-fg2">
-        <span className="truncate">{layout.length} 个区域 · 双击目录可深入查看</span>
+      <div className="panel-foot panel-foot--spread panel-foot--tall panel-foot--pad4">
+        <span className="u-truncate">{layout.length} 个区域 · 双击目录可深入查看</span>
         {hover && (
-          <div className="pointer-events-auto flex items-center gap-1">
-            {tree.isDir(hover.id) && <button onClick={() => onEnter(hover.id)} className="rounded px-2 py-1 hover:bg-subtle">打开目录</button>}
-            <button onClick={() => void copyPath()} className="rounded p-1 hover:bg-subtle" title="复制路径">{copied ? <Check className="h-3.5 w-3.5 text-success" /> : <Copy className="h-3.5 w-3.5" />}</button>
-            {onDelete && <button onClick={() => onDelete(hover.id)} className="rounded p-1 text-danger hover:bg-danger-soft" title="模拟释放空间"><Trash2 className="h-3.5 w-3.5" /></button>}
+          <div className="map-foot-actions">
+            {tree.isDir(hover.id) && <button onClick={() => onEnter(hover.id)} className="map-action">打开目录</button>}
+            <button onClick={() => void copyPath()} className="icon-btn" title="复制路径">{copied ? <Check className="i14 u-success" /> : <Copy className="i14" />}</button>
+            {onDelete && <button onClick={() => onDelete(hover.id)} className="icon-btn--danger icon-btn" title="模拟释放空间"><Trash2 className="i14" /></button>}
           </div>
         )}
       </div>

@@ -42,28 +42,26 @@ export default function RustCodeViewer() {
   };
 
   return (
-    <div className="flex h-full min-h-0 bg-card text-fg">
-      <aside className="flex w-[250px] shrink-0 flex-col border-r border-stroke bg-layer-solid max-md:hidden">
-        <div className="flex h-10 items-center gap-2 border-b border-stroke px-4 text-[11px] font-semibold tracking-wide text-fg2">
-          <FolderTree className="h-3.5 w-3.5" /> 工程结构
+    <div className="code-shell">
+      <aside className="code-side">
+        <div className="code-side-head">
+          <FolderTree className="i14" /> 工程结构
         </div>
-        <div className="min-h-0 flex-1 overflow-auto py-2">
+        <div className="code-tree">
           {groups.map((group) => (
-            <div key={group} className="mb-2">
-              <div className="px-4 py-1 text-[10px] font-semibold text-fg3">{group}</div>
+            <div key={group} className="code-group">
+              <div className="code-group-name">{group}</div>
               {FILES.filter((item) => item.group === group).map((item) => {
                 const active = item.path === activePath;
                 return (
                   <button
                     key={item.path}
                     onClick={() => setActivePath(item.path)}
-                    className={`relative flex w-full items-center gap-2 px-4 py-1.5 text-left text-[12px] ${
-                      active ? "bg-accent-soft font-semibold text-accent" : "text-fg hover:bg-subtle"
-                    }`}
+                    className={`code-file ${active ? "code-file--on" : ""}`}
                   >
-                    {active && <span className="absolute bottom-1 left-0 top-1 w-[3px] rounded-r bg-accent" />}
-                    <FileCode2 className="h-3.5 w-3.5 shrink-0" />
-                    <span className="truncate">{item.path.split("/").pop()}</span>
+                    {active && <span className="code-file-bar" />}
+                    <FileCode2 className="i14 u-shrink-0" />
+                    <span className="code-file-name">{item.path.split("/").pop()}</span>
                   </button>
                 );
               })}
@@ -72,13 +70,13 @@ export default function RustCodeViewer() {
         </div>
       </aside>
 
-      <div className="flex min-w-0 flex-1 flex-col">
-        <div className="flex shrink-0 items-center justify-between gap-3 border-b border-stroke px-4 py-2">
-          <div className="min-w-0">
+      <div className="code-main">
+        <div className="code-bar">
+          <div className="u-min-w-0">
             <select
               value={activePath}
               onChange={(e) => setActivePath(e.target.value)}
-              className="mb-1 hidden rounded border border-stroke px-2 py-1 text-[12px] max-md:block"
+              className="code-bar-select"
             >
               {FILES.map((item) => (
                 <option key={item.path} value={item.path}>
@@ -86,25 +84,25 @@ export default function RustCodeViewer() {
                 </option>
               ))}
             </select>
-            <div className="truncate font-mono text-[12px] font-semibold text-fg">{file.path}</div>
-            <div className="truncate text-[11px] text-fg2">
+            <div className="code-path">{file.path}</div>
+            <div className="code-desc">
               {file.description} · {lines.length} 行
             </div>
           </div>
           <button
             onClick={() => void copy()}
-            className="flex h-8 shrink-0 items-center gap-1.5 rounded-md border border-stroke bg-card px-2.5 text-[11px] hover:bg-subtle"
+            className="dialog-code-btn"
           >
-            {copied ? <Check className="h-3.5 w-3.5 text-success" /> : <Copy className="h-3.5 w-3.5" />}
+            {copied ? <Check className="i14 u-success" /> : <Copy className="i14" />}
             {copied ? "已复制" : "复制"}
           </button>
         </div>
-        <div className="min-h-0 flex-1 overflow-auto bg-app">
-          <pre className="select-text py-3 font-mono text-[12px] leading-[1.65]">
+        <div className="code-body">
+          <pre className="code-pre">
             {lines.map((line, index) => (
-              <div key={index} className="flex hover:bg-subtle">
-                <span className="w-12 shrink-0 select-none pr-4 text-right text-fg3">{index + 1}</span>
-                <code className={`whitespace-pre pr-6 ${lineClass(line)}`}>{line || " "}</code>
+              <div key={index} className="code-line">
+                <span className="code-gutter">{index + 1}</span>
+                <code className={`code-text ${lineClass(line)}`}>{line || " "}</code>
               </div>
             ))}
           </pre>
@@ -117,9 +115,9 @@ export default function RustCodeViewer() {
 /** 极简高亮：注释、属性、关键字行分别着色，避免引入额外依赖。 */
 function lineClass(line: string): string {
   const trimmed = line.trimStart();
-  if (trimmed.startsWith("//") || trimmed.startsWith("#") && trimmed.startsWith("# ")) return "text-fg3 italic";
-  if (trimmed.startsWith("#[") || trimmed.startsWith("#![")) return "text-warning";
-  if (/^\[.*\]$/.test(trimmed)) return "text-accent font-semibold";
-  if (/^(pub\s+)?(fn|struct|enum|impl|mod|const|use|type|trait)\b/.test(trimmed)) return "text-accent";
-  return "text-fg";
+  if (trimmed.startsWith("//") || trimmed.startsWith("#") && trimmed.startsWith("# ")) return "u-fg3 u-italic";
+  if (trimmed.startsWith("#[") || trimmed.startsWith("#![")) return "u-warning";
+  if (/^\[.*\]$/.test(trimmed)) return "u-accent u-font-semibold";
+  if (/^(pub\s+)?(fn|struct|enum|impl|mod|const|use|type|trait)\b/.test(trimmed)) return "u-accent";
+  return "u-fg";
 }
