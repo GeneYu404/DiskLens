@@ -45,8 +45,17 @@ export interface DeleteResult {
   freedFiles: number;
 }
 
+/** 后端探测的提权状态 */
+export interface ElevationInfo {
+  /** 是否以管理员（已提升）身份运行 */
+  elevated: boolean;
+  /** 面向用户的一句话说明 */
+  hint: string;
+}
+
 export const backend = {
   listDrives: () => invoke<DriveInfo[]>("list_drives"),
+  checkElevation: () => invoke<ElevationInfo>("check_elevation"),
   startScan: (path: string, engine: BackendEngine, threads: number) =>
     invoke<void>("start_scan", { path, engine, threads }),
   progress: () => invoke<ProgressDto>("scan_progress"),

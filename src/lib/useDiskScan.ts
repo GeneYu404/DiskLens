@@ -70,6 +70,11 @@ export function useDiskScan() {
   const [message, setMessage] = useState<string | null>(null);
   const [engineUsed, setEngineUsed] = useState<string | null>(null);
   const [currentPath, setCurrentPath] = useState("");
+  /**
+   * 提权状态。MFT 直读需要管理员，没有提升时 engine 会静默回退到并行遍历，
+   * 整卷扫描慢一个数量级 —— 界面必须明确说出来，而不是让用户从速度里猜。
+   */
+  const [elevated, setElevated] = useState<boolean | null>(null);
 
   const scannerRef = useRef<RealisticScanner | null>(null);
   const rafRef = useRef<number | null>(null);
@@ -86,6 +91,24 @@ export function useDiskScan() {
   }, []);
 
   useEffect(() => stopTimers, [stopTimers]);
+
+  // 启动时问一次后端：当前是不是管理员
+  useEffect(() => {
+    if (!native) return;
+    let alive = true;
+    backend
+      .checkElevation()
+      .then((info) => {
+        if (alive) setElevated(info.elevated);
+      })
+      .catch(() => {
+        // 探测失败不当作「已优化」：未知状态不弹提示，避免误报
+        if (alive) setElevated(null);
+      });
+    return () => {
+      alive = false;
+    };
+  }, [native]);
 
   useEffect(() => {
     if (!native) return;
@@ -286,6 +309,8 @@ export function useDiskScan() {
 
   return {
     native,
+    /** false = 明确检测到未以管理员运行，界面据此提示重启；null = 未知，不提示 */
+    elevated,
     drives,
     tree,
     version,

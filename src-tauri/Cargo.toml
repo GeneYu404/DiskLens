@@ -14,3 +14,12 @@ tauri = { version = "2", features = [] }
 serde.workspace = true
 trash = "5"
 disklens-core = { path = "../crates/disklens-core" }
+
+# 仅用于探测「是否以管理员身份运行」——MFT 直读模式需要提升权限。
+# 只开三个最小 feature，其余 Win32 调用一律走 std / sysinfo。
+[target.'cfg(windows)'.dependencies]
+windows = { version = "0.62", features = [
+    "Win32_Foundation",
+    "Win32_Security",
+    "Win32_System_Threading",
+] }

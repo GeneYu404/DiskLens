@@ -9,6 +9,7 @@ fn main() {
         .manage(state::AppState::default())
         .invoke_handler(tauri::generate_handler![
             commands::list_drives,
+            commands::check_elevation,
             commands::start_scan,
             commands::scan_progress,
             commands::cancel_scan,

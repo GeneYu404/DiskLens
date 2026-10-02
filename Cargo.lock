@@ -625,6 +625,7 @@ dependencies = [
  "tauri",
  "tauri-build",
  "trash",
+ "windows 0.62.2",
 ]
 
 [[package]]

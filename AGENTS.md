@@ -78,7 +78,21 @@ bun run tauri icon src-tauri/app-icon.svg
 统一返回 `var()` 引用**，canvas 侧在绘制前经 `Treemap.tsx` 的 `resolveCssColor` 解析一次。
 新增图表时照此办理，否则深色模式下列表对了、图不对。
 
-## 7. Git
+## 7. MFT 模式需要管理员
+
+`auto` 引擎在没有提权权限时会**静默**回退到 `walk` 并行遍历，整卷扫描慢一个数量级。
+不要让用户从扫描速度里自己猜——启动时调 `check_elevation` 探一次，
+未提升时在 `<main>` 顶部显示醒目提示（`bg-warning-soft` + `ShieldAlert`），
+文案要写清后果（回退、更慢）和动作（右键「以管理员身份运行」重启）。
+
+`elevated` 三态：`false` 提示、`true` 不提示、`null` 未知也不提示（探测失败不要误报）。
+
+`elevation_info()` 里两处 windows 0.62 的 API 形状容易写错：
+`HANDLE` 是**新类型**不是裸指针（`HANDLE(std::ptr::null_mut())`），
+`OpenProcessToken` 收 `*mut HANDLE` 而 `GetTokenInformation` 收 `HANDLE`，
+`TOKEN_ELEVATION::TokenIsElevated` 是 `u32` 不是 `BOOL`（用 `!= 0` 判）。
+
+## 8. Git
 
 分支 `main`，远端 `https://github.com/GeneYu404/DiskLens.git`（public）。
 提交身份用已配置的全局值，不要写死别的。
@@ -88,11 +102,12 @@ bun run tauri icon src-tauri/app-icon.svg
 - 删除文件先问用户；`rm` 走运行时可恢复删除，不要用永久删除命令
 - force push 默认禁止，且只能用 `--force-with-lease`
 
-## 8. 改动前先核对清单
+## 9. 改动前先核对清单
 
 1. 动到 `target` 忽略规则了吗？→ 见 §4，注意尾斜杠
 2. 新加图表色了吗？→ 必须走 `dataviz-*` 令牌，且明暗两套都要给值，见 §6
 3. 新加了 canvas 绘制吗？→ 填色前先 `resolveCssColor`，见 §6
 4. 改了 `tauri.conf.json` 的 `identifier` 吗？→ 会连带改应用数据目录；本项目无 `app_data_dir` 类调用，改动安全
 5. 改了 `tsconfig.json` 的 `paths` 吗？→ TS 7 已移除 `baseUrl`，必须用相对路径 `"./src/*"`
-6. 交付 exe 了吗？→ 见 §3，放 `D:\Tool\`
+6. 动到扫描引擎选择吗？→ 提权回退必须让用户看得见，见 §7
+7. 交付 exe 了吗？→ 见 §3，放 `D:\Tool\`

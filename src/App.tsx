@@ -28,6 +28,7 @@ import {
   RefreshCw,
   Search,
   Settings2,
+  ShieldAlert,
   ShieldCheck,
   Square,
   Tags,
@@ -271,6 +272,19 @@ export default function App() {
 
         {/* 主内容 */}
         <main className="flex min-w-0 flex-1 flex-col overflow-hidden">
+          {/* 未以管理员运行时提醒：MFT 直读需要提权，否则整卷扫描回退到并行遍历会慢一个数量级 */}
+          {scan.native && scan.elevated === false && (
+            <div
+              role="status"
+              className="mx-8 mt-6 flex shrink-0 items-start gap-2.5 rounded-lg border border-warning-soft bg-warning-soft px-3.5 py-2.5 text-[12.5px] text-fg2 max-sm:mx-4"
+            >
+              <ShieldAlert className="mt-px h-4 w-4 shrink-0 text-warning" aria-hidden="true" />
+              <div className="min-w-0">
+                <span className="font-medium text-fg">当前未以管理员身份运行。</span>
+                整卷扫描会回退到并行遍历模式，明显更慢。请关闭 DiskLens，右键图标选择「以管理员身份运行」重新启动，即可使用 NTFS $MFT 直读（快一个数量级）。
+              </div>
+            </div>
+          )}
           <header className="shrink-0 px-8 pb-4 pt-7 max-sm:px-4 max-sm:pt-4">
             <div className="mb-3 flex items-center gap-1.5 text-[11px] text-fg3">
               <span>此电脑</span><ChevronRight className="h-3 w-3" />

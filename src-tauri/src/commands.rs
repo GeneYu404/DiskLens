@@ -59,6 +59,72 @@ pub struct DeleteResult {
     freed_files: u32,
 }
 
+/// 当前进程是否以管理员（已提升）身份运行。
+///
+/// MFT 模式要直读 `$MFT`，没有提升权限会静默回退到并行遍历，整卷扫描慢一个数量级。
+/// 前端据此在界面上明确提示「以管理员身份重启」，而不是让用户从扫描速度里慢慢猜。
+#[derive(Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct ElevationInfo {
+    /// 是否已提升
+    pub elevated: bool,
+    /// 面向用户的一句话说明
+    pub hint: String,
+}
+
+#[tauri::command]
+pub async fn check_elevation() -> CmdResult<ElevationInfo> {
+    Ok(elevation_info())
+}
+
+#[cfg(windows)]
+fn elevation_info() -> ElevationInfo {
+    use windows::Win32::Foundation::{CloseHandle, HANDLE};
+    use windows::Win32::Security::{GetTokenInformation, TokenElevation, TOKEN_ELEVATION, TOKEN_QUERY};
+    use windows::Win32::System::Threading::{GetCurrentProcess, OpenProcessToken};
+
+    unsafe {
+        // windows 0.62：HANDLE 是新类型（不是裸指针），OpenProcessToken 收 *mut HANDLE
+        let mut token = HANDLE(std::ptr::null_mut());
+        if OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &mut token).is_err() {
+            // 取不到令牌就按「未提升」处理：宁可多提示一次，也不要让用户以为已优化
+            return ElevationInfo {
+                elevated: false,
+                hint: "无法确认当前权限（读取进程令牌失败）".into(),
+            };
+        }
+        let mut elevation = TOKEN_ELEVATION::default();
+        let mut size = 0u32;
+        let ok = GetTokenInformation(
+            token,
+            TokenElevation,
+            Some(&mut elevation as *mut _ as *mut _),
+            std::mem::size_of::<TOKEN_ELEVATION>() as u32,
+            &mut size,
+        )
+        .is_ok();
+        let _ = CloseHandle(token);
+        // TOKEN_ELEVATION::TokenIsElevated 在 windows 0.62 里是 u32，不是 BOOL
+        let elevated = ok && elevation.TokenIsElevated != 0;
+        ElevationInfo {
+            elevated,
+            hint: if elevated {
+                "已以管理员身份运行，可使用 MFT 直读模式".into()
+            } else {
+                "当前不是管理员，整卷扫描会回退到并行遍历（明显更慢）。建议以管理员身份重启 DiskLens。".into()
+            },
+        }
+    }
+}
+
+#[cfg(not(windows))]
+fn elevation_info() -> ElevationInfo {
+    ElevationInfo {
+        elevated: true,
+        hint: "非 Windows 平台，无提权概念，始终使用并行遍历".into(),
+    }
+}
+
 #[tauri::command]
 pub async fn list_drives() -> CmdResult<Vec<DriveInfo>> {
     Ok(drives::list_drives())
