@@ -6,18 +6,13 @@ import Treemap, { type TreemapColorMode } from "./components/Treemap";
 import TopFilesView from "./components/TopFilesView";
 import ExtensionView from "./components/ExtensionView";
 import BenchmarkView from "./components/BenchmarkView";
-import PlanPanel from "./components/PlanPanel";
-import RustCodeViewer from "./components/RustCodeViewer";
 import {
   Activity,
   AlertTriangle,
   Check,
   ChevronDown,
   ChevronRight,
-  CircleHelp,
-  Code2,
   Database,
-  FileCode2,
   Files,
   Gauge,
   HardDrive,
@@ -86,8 +81,6 @@ export default function App() {
   const [expanded, setExpanded] = useState<Set<number>>(new Set([0]));
   const [selected, setSelected] = useState(0);
   const [cursor, setCursor] = useState(0);
-  const [showPlan, setShowPlan] = useState(false);
-  const [showRustCode, setShowRustCode] = useState(false);
   const [showScanOptions, setShowScanOptions] = useState(false);
 
   const activeDrive = drives[driveIdx] ?? drives[0] ?? PLACEHOLDER_DRIVE;
@@ -161,8 +154,6 @@ export default function App() {
       }
       if (event.key === "Escape") {
         setShowScanOptions(false);
-        setShowPlan(false);
-        setShowRustCode(false);
         if (document.activeElement?.id === "disklens-search") {
           setSearchQuery("");
           (document.activeElement as HTMLElement).blur();
@@ -192,10 +183,6 @@ export default function App() {
             {scan.native ? "已连接本机" : "演示模式"}
           </span>
           <span className="h-4 w-px bg-stroke" />
-          <button onClick={() => setShowPlan(true)} className="flex h-8 items-center gap-1.5 rounded-md px-2.5 text-[11px] text-fg2 transition-colors hover:bg-subtle hover:text-fg" title="了解技术方案">
-            <CircleHelp className="h-[15px] w-[15px]" strokeWidth={1.8} />
-            <span className="hidden sm:inline">帮助</span>
-          </button>
         </div>
       </div>
 
@@ -250,23 +237,6 @@ export default function App() {
               </button>
             ))}
             {drives.length === 0 && <p className="px-3 text-[11px] text-fg3 max-md:hidden">正在检测磁盘...</p>}
-          </div>
-
-          <div className="mt-auto space-y-1 border-t border-stroke pt-3">
-            <button
-              onClick={() => setShowPlan(true)}
-              className="flex h-9 w-full items-center gap-3 rounded-md px-3 text-left text-[12px] text-fg2 hover:bg-subtle max-md:justify-center max-md:px-0"
-            >
-              <CircleHelp className="h-4 w-4 shrink-0" strokeWidth={1.8} />
-              <span className="max-md:hidden">技术方案</span>
-            </button>
-            <button
-              onClick={() => setShowRustCode(true)}
-              className="flex h-9 w-full items-center gap-3 rounded-md px-3 text-left text-[12px] text-fg2 hover:bg-subtle max-md:justify-center max-md:px-0"
-            >
-              <FileCode2 className="h-4 w-4 shrink-0" strokeWidth={1.8} />
-              <span className="max-md:hidden">Rust 后端源码</span>
-            </button>
           </div>
         </aside>
 
@@ -503,28 +473,6 @@ export default function App() {
           </footer>
         </main>
       </div>
-
-      {showPlan && <PlanPanel onClose={() => setShowPlan(false)} onOpenCodeViewer={() => setShowRustCode(true)} />}
-      {showRustCode && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/35 p-6 backdrop-blur-sm" onClick={() => setShowRustCode(false)}>
-          <div
-            className="flex h-[88vh] w-full max-w-6xl flex-col overflow-hidden rounded-xl border border-stroke bg-card shadow-dialog"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex h-12 shrink-0 items-center justify-between border-b border-stroke px-5">
-              <div className="flex items-center gap-2 text-[14px] font-semibold text-fg">
-                <Code2 className="h-4 w-4 text-accent" /> Rust 后端源码
-              </div>
-              <button onClick={() => setShowRustCode(false)} className="rounded p-1.5 text-fg2 hover:bg-subtle" aria-label="关闭">
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-            <div className="min-h-0 flex-1">
-              <RustCodeViewer />
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
