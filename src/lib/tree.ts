@@ -422,7 +422,7 @@ interface Task {
   depth: number;
 }
 
-export type ScanPhase = "idle" | "mft_boot" | "mft_records" | "rayon_traversal" | "tree_rebuild" | "done" | "cancelled";
+export type ScanPhase = "idle" | "mft_boot" | "mft_records" | "walk_traversal" | "tree_rebuild" | "done" | "cancelled";
 
 export class RealisticScanner {
   tree = new FlatTree();

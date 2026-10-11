@@ -3,7 +3,11 @@
 > ⚠️ **本项目由 AI 协助完成，状态不稳定。** 可能存在尚未发现的缺陷，请自行评估使用风险。
 
 Windows 磁盘空间分析工具，对标 WizTree / Everything 的扫描速度。
-Rust 负责扫描（NTFS `$MFT` 直读 / rayon 并行遍历），Tauri 2 承载 React 前端。
+Go 负责扫描（NTFS `$MFT` 直读 / goroutine 并行遍历），MyGo 3 承载 React 前端。
+
+> 2026-10-11 从 Tauri 2 + Rust 整体重写为 Go 1.27 + MyGo 3（零 CGO）。
+> Rust 版（`crates/`、`src-tauri/`）已删除，`Cargo.toml` / `Cargo.lock` 不再存在。
+> 前后端协议与迁移对照见 [BACKEND.md](BACKEND.md) 与 [AGENTS.md](AGENTS.md) §0。
 
 ## 功能
 
@@ -16,13 +20,11 @@ Rust 负责扫描（NTFS `$MFT` 直读 / rayon 并行遍历），Tauri 2 承载 
 | **文件类型** | 按扩展名聚合分类统计 |
 | **性能模型** | 扫描引擎基准对比（`walk` vs `mft`） |
 
-后端架构与实现要点见 [BACKEND.md](BACKEND.md)。
-
 ## 扫描引擎
 
 | 引擎 | 适用范围 | 原理 |
 | --- | --- | --- |
-| `walk` | 所有平台、所有文件系统、任意目录 | 每目录一个 rayon 任务，Windows 上直接用 `FindNextFileW` 的元数据，不额外 `stat` |
+| `walk` | 所有平台、所有文件系统、任意目录 | 每目录一个 goroutine 子任务并发递归；信号量只覆盖「读目录」段，不覆盖「等子目录」——否则并发度为 1 时父子互等直接死锁 |
 | `mft` | Windows NTFS 整卷，**需管理员** | 读引导扇区 → 解析 `$MFT` 的 data runs → 4MB 块顺序读取 → 按父记录号计数排序 → BFS 建树 |
 | `auto` | 默认 | 满足条件用 `mft`，失败自动回退 `walk` 并打印原因 |
 
@@ -33,9 +35,11 @@ Win32/POSIX/DOS 命名空间优先级、稀疏运行。暂不处理：命名数�
 
 - Windows 10 / 11
 - [Bun](https://bun.sh) 1.4+（包管理与脚本）
-- Rust 1.98+（MSVC 工具链）
-- [Tauri 依赖](https://tauri.app/start/prerequisites/)：MSVC Build Tools、WebView2 Runtime
+- Go 1.27+
+- WebView2 Runtime（MyGo 用它承载前端）
 - **扫描整个卷需要以管理员身份启动**（MFT 模式要求）
+
+没有 CGO，不需要 Visual Studio Build Tools。Go 侧依赖只有 `mygo` 与 `golang.org/x/sys` 两个。
 
 ## 构建与运行
 
@@ -44,42 +48,66 @@ bun install
 
 bun run dev          # 前端开发服务器（浏览器中为演示数据）
 bun run typecheck    # tsc --noEmit
-bun run build:exe    # 产出 src-tauri/target/release/disklens.exe
+bun run build:exe    # mygo build → build/portable/DiskLens.exe
+bun run mygo:dev     # 桌面壳开发模式（自动拉起 vite）
 ```
 
-**只出 exe，不打安装包**。需要安装包时用 `bun run tauri build`。
+**只出 exe，不打安装包**。`bun run build:exe` 会把 NSIS 安装包剔掉，只留 exe 到
+`build/portable/`。交付的 exe 请复制到 `D:\Tool\`（见 AGENTS.md §3）。
 
-首次克隆后若缺图标，用 `bun run tauri icon src-tauri/app-icon.svg` 生成 `src-tauri/icons/*`。
+改 Go 代码后必须跑通这六条：
+
+```bash
+bun run typecheck
+gofmt -l .                    # 必须无输出
+go vet ./...
+CGO_ENABLED=0 go build ./...  # 零 CGO 是硬约束
+go test ./...
+bun run build:exe
+```
 
 ## 目录结构
 
 ```
-crates/
-├── disklens-core/            # 扫描核心库（与 UI 无关）
-│   └── src/
-│       ├── engine.rs         # 引擎选择 / 自动回退 / 原子进度
-│       ├── scanner.rs        # rayon 并行目录遍历
-│       ├── mft.rs            # NTFS $MFT 直读（Windows，需管理员）
-│       ├── tree.rs           # 40 字节/节点的扁平树
-│       ├── query.rs          # 分页 / Top-N / 搜索 / 剪枝快照
-│       └── drives.rs         # 磁盘列表
-└── disklens-cli/             # 命令行版本
+main.go                          # MyGo 桌面壳入口（唯一的窗口在这里建）
+mygo.config.ts                   # MyGo 打包配置
+internal/
+├── core/                        # 扫描核心库（与 UI 无关，CLI 与桌面壳共用）
+│   ├── engine.go                # 引擎选择 / 自动回退 / 原子进度
+│   ├── scanner_windows.go       # goroutine 并行目录遍历
+│   ├── mft_parse.go             # NTFS $MFT 直读解析
+│   ├── tree.go                  # 扁平树（uint32 下标代替指针）
+│   ├── query.go                 # 分页 / Top-N / 搜索 / 剪枝快照
+│   └── drives_windows.go        # 磁盘列表
+└── shell/                       # 绑定给前端的 MyGo 服务（15 个方法）
 
-src-tauri/                    # Tauri 2 桌面壳（IPC 命令）
-src/                          # React 前端
-├── bridge/                   # ——（无，数据直接走 tauri invoke）
-├── components/               # Treemap / TreeList / TopFiles / Extension / Benchmark / PlanPanel / RustCodeViewer
-│   └── ui/                   # Fluent 基础组件
-├── lib/                      # tree / treemap / format / useDiskScan
-└── index.css                 # Windows 11 Fluent 设计令牌（明暗两套）
+cmd/disklens/                    # 命令行版本
+
+src/                             # React 前端
+├── mygo.ts                      # mygo generate 生成，勿手改
+├── components/                  # Treemap / TreeList / TopFiles / Extension / Benchmark / PlanPanel / GoCodeViewer
+│   └── ui/                      # Fluent 基础组件
+├── lib/                         # tree / treemap / format / useDiskScan / backend（唯一的桥接层）
+└── index.css                    # Windows 11 Fluent 设计令牌（明暗两套）
 ```
 
 命令行版本：
 
 ```bash
-cargo run -p disklens-cli --release -- C:\ --top 20
-cargo test -p disklens-core
+go run ./cmd/disklens -- C:\ --top 20
+go test ./internal/core/
 ```
+
+## 前端桥接
+
+前端与外壳的耦合**只在 `src/lib/backend.ts` 一个文件**。它把 MyGo 的绑定调用包成
+原 Tauri 版同名同义的 `backend.*`，`useDiskScan.ts` 及所有组件都不知道底层换过。
+
+三处协议差异（详见 backend.ts 顶部注释）：
+
+1. **二进制走 base64**。MyGo 把 Go 的 `[]byte` 序列化成 base64 字符串，不是 `ArrayBuffer`。
+2. **可选值用空串**。Rust 的 `Option<String>` 缺省时给 `""`，桥接层还原成 `null`。
+3. **位置参数**。生成的客户端按 Go 方法签名传参，不是 `invoke(name, {...})`。
 
 ## 设计说明
 

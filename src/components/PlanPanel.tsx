@@ -22,7 +22,7 @@ export default function PlanPanel({ onClose, onOpenCodeViewer }: Props) {
             <div><h2 className="dialog-title">高性能磁盘占用查看器</h2><p className="dialog-subtitle">扫描 · 紧凑数据结构 · 视口渲染</p></div>
           </div>
           <div className="dialog-actions">
-            {onOpenCodeViewer && <button onClick={() => { onClose(); onOpenCodeViewer(); }} className="dialog-code-btn"><Code2 className="i14 u-accent" />Rust 示例</button>}
+            {onOpenCodeViewer && <button onClick={() => { onClose(); onOpenCodeViewer(); }} className="dialog-code-btn"><Code2 className="i14 u-accent" />Go 示例</button>}
             <button onClick={onClose} className="dialog-close" aria-label="关闭"><X className="i16" /></button>
           </div>
         </header>
@@ -46,8 +46,8 @@ function Performance() {
   const rows = [
     ["Python os.walk + stat", "30–120 秒", "每个文件额外 stat，单线程"],
     ["Python os.scandir", "15–60 秒", "复用目录项属性，仍有解释器开销"],
-    ["C++ / Rust 单线程", "5–20 秒", "原生遍历，受单核与寻址影响"],
-    ["Rust Rayon 多线程", "2–8 秒", "通用路线；工作窃取并行扫描"],
+    ["C++ / Go 单线程", "5–20 秒", "原生遍历，受单核与寻址影响"],
+    ["Go goroutine 多线程", "2–8 秒", "通用路线；按核心数并行扫描"],
     ["NTFS $MFT 直读", "1–3 秒", "顺序读取元数据；需要管理员权限"],
     ["USN Journal 增量", "毫秒级", "首次建立索引后仅同步变更"],
   ];
@@ -57,7 +57,7 @@ function Performance() {
       <div className="dialog-thead"><span>方案</span><span>参考耗时</span><span>特点</span></div>
       {rows.map(([name, time, note], index) => <div key={name} className={`dialog-trow ${index === 3 || index === 4 ? "dialog-trow--hl" : ""}`}><span className={index === 3 || index === 4 ? "dialog-tname" : ""}>{name}</span><span className="dialog-ttime">{time}</span><span className="dialog-tnote">{note}</span></div>)}
     </div>
-    <div className="dialog-callout"><Cpu className="dialog-callout-icon" /><p className="dialog-callout-text">建议先实现 Rust 多线程遍历作为通用基线，再为 NTFS 增加 MFT 加速模式。USN Journal 本身不提供完整文件大小，适合用于首次扫描后的增量同步。</p></div>
+    <div className="dialog-callout"><Cpu className="dialog-callout-icon" /><p className="dialog-callout-text">建议先实现 Go 多线程遍历作为通用基线，再为 NTFS 增加 MFT 加速模式。USN Journal 本身不提供完整文件大小，适合用于首次扫描后的增量同步。</p></div>
   </div>;
 }
 
@@ -75,14 +75,14 @@ function Mft() {
 function Memory() {
   return <div className="stack-5">
     <div><h3 className="dialog-section-title">用下标代替对象指针</h3><p className="dialog-section-note">百万至千万级节点建议使用连续数组、字符串池和惰性排序。</p></div>
-    <pre className="dialog-code">{`struct FlatNode {
-    size: u64,           // 子树总占用
-    parent: u32,         // 父节点下标
-    first_child: u32,    // 首个子节点
-    next_sibling: u32,   // 下一个兄弟节点
-    name_offset: u32,    // 共享字符串池偏移
-    name_len: u16,       // 名称字节长度
-    flags: u16,          // 目录与属性标记
+    <pre className="dialog-code">{`type FlatNode struct {
+    Size        uint64   // 子树总占用
+    Parent      uint32   // 父节点下标
+    FirstChild  uint32   // 首个子节点
+    NextSibling uint32   // 下一个兄弟节点
+    NameOffset  uint32   // 共享字符串池偏移
+    NameLen     uint16   // 名称字节长度
+    Flags       uint16   // 目录与属性标记
 }`}</pre>
     <div className="dialog-grid-2">
       <div className="insight"><Layers className="insight-icon i16" /><p className="dialog-note">连续 TypedArray 减少堆分配与指针跳转，对 CPU 缓存更友好；子节点按需排序并缓存。</p></div>
@@ -93,15 +93,15 @@ function Memory() {
 
 function Stack() {
   const options = [
-    ["Rust + Tauri", "推荐", "Rust 负责扫描与索引；前端以 Canvas 呈现矩形树图。"],
-    ["Rust + egui", "轻量", "单进程即时模式 UI，集成简洁，原生绘制效率高。"],
-    ["Rust + PySide6", "兼容", "通过 PyO3 暴露扫描核心，适合已有 Python 工具链。"],
+    ["Go + MyGo", "推荐", "Go 负责扫描与索引；前端以 Canvas 呈现矩形树图。"],
+    ["Go + Fyne", "轻量", "单进程即时模式 UI，集成简洁，原生绘制效率高。"],
+    ["Go + Wails", "兼容", "WebView + Go 二进制，对已有前端最友好。"],
   ];
   return <div className="stack-5">
     <div><h3 className="dialog-section-title">按产品目标选择界面</h3><p className="dialog-section-note">扫描核心与渲染层分离，后续可独立替换 MFT 和 USN 模块。</p></div>
     <div className="dialog-choices">
       {options.map(([title, label, description]) => <div key={title} className="choice"><span className="choice-title">{title}</span><span className="dialog-badge">{label}</span><p className="choice-desc">{description}</p></div>)}
     </div>
-    <ol className="dialog-list stack-2"><li>完成 Rust CLI 多线程遍历基线。</li><li>增加扫描进度、取消和 Top 文件列表。</li><li>切换 FlatTree 与虚拟列表，控制内存占用。</li><li>添加 NTFS MFT 与 USN 增量更新。</li></ol>
+    <ol className="dialog-list stack-2"><li>完成 Go CLI 多线程遍历基线。</li><li>增加扫描进度、取消和 Top 文件列表。</li><li>切换 FlatTree 与虚拟列表，控制内存占用。</li><li>添加 NTFS MFT 与 USN 增量更新。</li></ol>
   </div>;
 }

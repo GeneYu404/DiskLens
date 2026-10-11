@@ -166,7 +166,7 @@ export default function App() {
 
   return (
     <div className="fluent-shell app-shell">
-      {/* Tauri uses the system title bar. This is the app's own command header. */}
+      {/* 桌面外壳用系统标题栏，这里是应用自己的命令栏。 */}
       <div className="titlebar">
         <div className="titlebar-main">
           <div className="app-mark">
@@ -178,7 +178,7 @@ export default function App() {
           </div>
         </div>
         <div className="titlebar-right">
-          <span className="conn-pill" title={scan.native ? "Rust 后端正在处理本机磁盘" : "浏览器中使用模拟数据"}>
+          <span className="conn-pill" title={scan.native ? "Go 后端正在处理本机磁盘" : "浏览器中使用模拟数据"}>
             <span className={`dot-6 ${scan.native ? "is-ok" : "is-warn"}`} />
             {scan.native ? "已连接本机" : "演示模式"}
           </span>
@@ -292,7 +292,7 @@ export default function App() {
                 <div className="pop-title">扫描设置</div>
                 <p className="pop-note">更改设置后，在下次扫描时生效。</p>
                 <label className="pop-label">扫描引擎</label>
-                <select value={engine} onChange={(e) => setEngine(e.target.value as EngineChoice)} disabled={scanning} className="pop-select"><option value="mft">自动（优先 NTFS MFT）</option><option value="rayon">并行目录遍历</option></select>
+                <select value={engine} onChange={(e) => setEngine(e.target.value as EngineChoice)} disabled={scanning} className="pop-select"><option value="mft">自动（优先 NTFS MFT）</option><option value="walk">并行目录遍历</option></select>
                 <label className="pop-label pop-label--tight">工作线程</label>
                 <select value={threads} onChange={(e) => setThreads(Number(e.target.value))} disabled={scanning} className="pop-select">{[4, 8, 12, 16, 32].map((n) => <option key={n} value={n}>{n} 线程</option>)}</select>
                 <div className="pop-foot"><Info className="i14 u-shrink-0" /> MFT 仅适用于 NTFS 整卷，可能需要管理员权限。</div>
@@ -463,7 +463,7 @@ export default function App() {
             <div className="status-right">
               <span className="status-metric">{formatCount(stats.nodeCount)} 个节点</span>
               <span className="status-metric">前端内存 {memoryMB.toFixed(1)} MB</span>
-              <span className="status-backend"><span className="dot-6 is-ok" />{scan.native ? "Rust 后端" : "浏览器演示"}</span>
+              <span className="status-backend"><span className="dot-6 is-ok" />{scan.native ? "Go 后端" : "浏览器演示"}</span>
             </div>
           </footer>
         </main>

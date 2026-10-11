@@ -3,7 +3,8 @@ import { DRIVE_PRESETS, FlatTree, RealisticScanner } from "./tree";
 import { backend, decodeSnapshot, isNative, SYNTHETIC_ID, type DriveInfo, type ProgressDto } from "./backend";
 import { formatBytes } from "./format";
 
-export type EngineChoice = "mft" | "rayon";
+/** 引擎选择。`"walk"` 对应 Go 侧的 EngineWalk（goroutine 并行遍历）。 */
+export type EngineChoice = "mft" | "walk";
 export type ScanStatus = "idle" | "running" | "done" | "cancelled" | "failed";
 
 export interface DriveOption {
@@ -55,7 +56,7 @@ function toDriveOption(info: DriveInfo): DriveOption {
 
 /**
  * 扫描状态管理：
- * - 本机模式（Tauri）：调用 Rust 后端，每 100ms 读取一次进度，完成后拉取剪枝快照；
+ * - 本机模式（MyGo 桌面壳）：调用 Go 后端，每 100ms 读取一次进度，完成后拉取剪枝快照；
  * - 演示模式（浏览器）：在前端按帧分片生成模拟文件树。
  */
 export function useDiskScan() {

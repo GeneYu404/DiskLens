@@ -5,8 +5,8 @@ import { Cpu, HardDrive, Zap } from "lucide-react";
 const METHODS = [
   { name: "Python os.walk + stat", seconds: 65, detail: "解释器开销；逐文件读取元数据", color: "var(--text-3)" },
   { name: "Python os.scandir", seconds: 28, detail: "复用目录项属性，减少 stat 调用", color: "var(--text-2)" },
-  { name: "Rust / C++ 单线程", seconds: 11, detail: "原生遍历，受单核与目录寻址限制", color: "var(--dv-2)" },
-  { name: "Rust Rayon 多线程", seconds: 3.8, detail: "工作窃取并行扫描，通用文件系统路线", color: "var(--accent)" },
+  { name: "Go / C++ 单线程", seconds: 11, detail: "原生遍历，受单核与目录寻址限制", color: "var(--dv-2)" },
+  { name: "Go goroutine 多线程", seconds: 3.8, detail: "按核心数并行扫描，通用文件系统路线", color: "var(--accent)" },
   { name: "NTFS $MFT 元数据读取", seconds: 1.2, detail: "顺序读取 NTFS 元数据；需要管理员权限", color: "var(--success)" },
   { name: "USN Journal 增量更新", seconds: 0.05, detail: "首次建索引后，仅处理变更记录", color: "var(--dv-6)" },
 ];
